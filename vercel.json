@@ -1,15 +1,19 @@
 {
-    "version": 2,
-    "builds": [
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist/public",
+    "rewrites": [
         {
-            "src": "dist/index.cjs",
-            "use": "@vercel/node"
+            "source": "/api/(.*)",
+            "destination": "/api"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
         }
     ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "dist/index.cjs"
+    "functions": {
+        "api/**.ts": {
+            "runtime": "nodejs20.x"
         }
-    ]
+    }
 }
