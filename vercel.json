@@ -2,15 +2,5 @@
     "version": 2,
     "buildCommand": "npm run build",
     "outputDirectory": "dist/public",
-    "installCommand": "npm install",
-    "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/api/index.mjs"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/index.html"
-        }
-    ]
+    "installCommand": "npm install"
 }

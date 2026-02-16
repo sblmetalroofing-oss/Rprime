@@ -75,7 +75,7 @@ async function buildAll() {
     platform: "node",
     bundle: true,
     format: "esm",
-    outfile: "api/index.mjs",
+    outfile: "api/[...route].mjs",
     define: {
       "process.env.NODE_ENV": '"production"',
       "process.env.VERCEL": '"1"',
