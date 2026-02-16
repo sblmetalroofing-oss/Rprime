@@ -223,21 +223,16 @@ app.use((req, res, next) => {
   } else {
     // Use PORT from environment, default to 5000 for Replit deployment
     const port = parseInt(process.env.PORT || "5000", 10);
-    httpServer.listen(
-      {
-        port,
-        host: "0.0.0.0",
-        reusePort: true,
-      },
-      () => {
-        logger.info(`Server listening on port ${port}`);
-        // Seed document themes for organizations without any
-        seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
-        // Initialize Stripe AFTER server starts to allow health checks to pass quickly
-        initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
-        // Start Xero payment polling (every 5 minutes)
-        startXeroPolling();
-      },
+    const host = process.platform === 'win32' ? 'localhost' : '0.0.0.0';
+    httpServer.listen(port, host, () => {
+      logger.info(`Server listening on port ${port}`);
+      // Seed document themes for organizations without any
+      seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
+      // Initialize Stripe AFTER server starts to allow health checks to pass quickly
+      initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
+      // Start Xero payment polling (every 5 minutes)
+      startXeroPolling();
+    },
     );
   }
 })();

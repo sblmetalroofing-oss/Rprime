@@ -11,13 +11,14 @@ if (!databaseUrl) {
     );
 }
 
-// Create PostgreSQL connection pool
+// Create PostgreSQL connection pool optimized for Vercel serverless
 const pool = new Pool({
     connectionString: databaseUrl,
-    // Connection pool settings for better performance
-    max: 20, // Maximum number of clients in the pool
-    idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-    connectionTimeoutMillis: 10000, // Timeout after 10 seconds when acquiring a client
+    // Serverless-optimized settings
+    max: 1, // Vercel serverless functions should use minimal connections
+    idleTimeoutMillis: 0, // Disable idle timeout (let serverless handle it)
+    connectionTimeoutMillis: 5000, // 5 second timeout for acquiring connections
+    allowExitOnIdle: true, // Allow the pool to close when idle (important for serverless)
 });
 
 // Initialize Drizzle ORM with the pool and schema
