@@ -21,7 +21,7 @@ async function hasAnyData(organizationId: string): Promise<{ hasData: boolean; s
     db.select({ count: sql<number>`count(*)` }).from(documentThemes).where(eq(documentThemes.organizationId, organizationId)),
     db.select({ count: sql<number>`count(*)` }).from(documentSettings).where(eq(documentSettings.organizationId, organizationId)),
   ]);
-  
+
   const counts = {
     customers: Number(checks[0][0]?.count || 0),
     crewMembers: Number(checks[1][0]?.count || 0),
@@ -30,28 +30,28 @@ async function hasAnyData(organizationId: string): Promise<{ hasData: boolean; s
     documentThemes: Number(checks[4][0]?.count || 0),
     documentSettings: Number(checks[5][0]?.count || 0),
   };
-  
+
   const hasData = Object.values(counts).some(c => c > 0);
   const summary = Object.entries(counts)
     .filter(([, c]) => c > 0)
     .map(([name, c]) => `${c} ${name}`)
     .join(", ");
-  
+
   return { hasData, summary };
 }
 
 export async function seedOrganizationData(options: SeedDataOptions): Promise<void> {
   const { organizationId, companyName, ownerName, ownerEmail, forceReseed = false } = options;
-  
+
   if (!forceReseed) {
     const { hasData, summary } = await hasAnyData(organizationId);
-    
+
     if (hasData) {
       console.log(`Skipping seed for org ${organizationId} - already has: ${summary}`);
       return;
     }
   }
-  
+
   const sampleCustomers = [
     {
       id: randomUUID(),
@@ -90,11 +90,10 @@ export async function seedOrganizationData(options: SeedDataOptions): Promise<vo
       notes: "Sample customer - feel free to edit or delete",
     },
   ];
-  
-  for (const customer of sampleCustomers) {
-    await storage.createCustomer(customer);
-  }
-  
+
+  // Create customers in parallel
+  await Promise.all(sampleCustomers.map(customer => storage.createCustomer(customer)));
+
   const ownerCrewMember = {
     id: randomUUID(),
     organizationId,
@@ -111,17 +110,17 @@ export async function seedOrganizationData(options: SeedDataOptions): Promise<vo
     canAccessSettings: "true",
     inviteStatus: "accepted",
   };
-  
+
   await storage.createCrewMember(ownerCrewMember);
-  
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const nextWeek = new Date(today);
   nextWeek.setDate(nextWeek.getDate() + 7);
-  
+
   const formatDate = (d: Date) => d.toISOString().split('T')[0];
-  
+
   const sampleJobs = [
     {
       id: randomUUID(),
@@ -156,14 +155,13 @@ export async function seedOrganizationData(options: SeedDataOptions): Promise<vo
       assignedTo: [ownerName],
     },
   ];
-  
-  for (const job of sampleJobs) {
-    await storage.createJob(job);
-  }
-  
+
+  // Create jobs in parallel
+  await Promise.all(sampleJobs.map(job => storage.createJob(job)));
+
   const quoteId = randomUUID();
   const quoteNumber = await storage.getNextQuoteNumber(organizationId);
-  
+
   const sampleQuote = {
     id: quoteId,
     organizationId,
@@ -183,43 +181,47 @@ export async function seedOrganizationData(options: SeedDataOptions): Promise<vo
     subtotal: 850,
     gst: 85,
     total: 935,
+    sortOrder: 1, // Added sortOrder based on schema
   };
-  
+
   await storage.createQuote(sampleQuote);
-  
-  await storage.createQuoteItem({
-    id: randomUUID(),
-    quoteId,
-    description: "Labour - Gutter repair and replacement",
-    qty: 4,
-    unitCost: 85,
-    costPrice: 50,
-    total: 340,
-    sortOrder: 1,
-  });
-  
-  await storage.createQuoteItem({
-    id: randomUUID(),
-    quoteId,
-    description: "Materials - Colorbond guttering 6m lengths",
-    qty: 3,
-    unitCost: 120,
-    costPrice: 80,
-    total: 360,
-    sortOrder: 2,
-  });
-  
-  await storage.createQuoteItem({
-    id: randomUUID(),
-    quoteId,
-    description: "Materials - Brackets and fasteners",
-    qty: 1,
-    unitCost: 150,
-    costPrice: 100,
-    total: 150,
-    sortOrder: 3,
-  });
-  
+
+  const quoteItems = [
+    {
+      id: randomUUID(),
+      quoteId,
+      description: "Labour - Gutter repair and replacement",
+      qty: 4,
+      unitCost: 85,
+      costPrice: 50,
+      total: 340,
+      sortOrder: 1,
+    },
+    {
+      id: randomUUID(),
+      quoteId,
+      description: "Materials - Colorbond guttering 6m lengths",
+      qty: 3,
+      unitCost: 120,
+      costPrice: 80,
+      total: 360,
+      sortOrder: 2,
+    },
+    {
+      id: randomUUID(),
+      quoteId,
+      description: "Materials - Brackets and fasteners",
+      qty: 1,
+      unitCost: 150,
+      costPrice: 100,
+      total: 150,
+      sortOrder: 3,
+    },
+  ];
+
+  // Create quote items in parallel
+  await Promise.all(quoteItems.map(item => storage.createQuoteItem(item)));
+
   const defaultTheme = {
     id: randomUUID(),
     organizationId,
@@ -230,28 +232,30 @@ export async function seedOrganizationData(options: SeedDataOptions): Promise<vo
     companyName: companyName,
     email1: ownerEmail,
   };
-  
+
   await storage.createDocumentTheme(defaultTheme);
-  
-  await storage.upsertDocumentSettings(organizationId, {
-    id: randomUUID(),
-    organizationId,
-    type: "quote",
-    prefix: "Q",
-    nextNumber: 2,
-    defaultExpiryDays: 30,
-    defaultTerms: "Payment due within 14 days of acceptance. Quote valid for 30 days.",
-  });
-  
-  await storage.upsertDocumentSettings(organizationId, {
-    id: randomUUID(),
-    organizationId,
-    type: "invoice",
-    prefix: "INV",
-    nextNumber: 1,
-    defaultDueDays: 14,
-    defaultTerms: "Payment due within 14 days. Thank you for your business.",
-  });
-  
+
+  // Update settings in parallel
+  await Promise.all([
+    storage.upsertDocumentSettings(organizationId, {
+      id: randomUUID(),
+      organizationId,
+      type: "quote",
+      prefix: "Q",
+      nextNumber: 2,
+      defaultExpiryDays: 30,
+      defaultTerms: "Payment due within 14 days of acceptance. Quote valid for 30 days.",
+    }),
+    storage.upsertDocumentSettings(organizationId, {
+      id: randomUUID(),
+      organizationId,
+      type: "invoice",
+      prefix: "INV",
+      nextNumber: 1,
+      defaultDueDays: 14,
+      defaultTerms: "Payment due within 14 days. Thank you for your business.",
+    })
+  ]);
+
   console.log(`Seeded organization ${organizationId} with sample data`);
 }
