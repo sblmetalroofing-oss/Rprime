@@ -37,6 +37,8 @@ These enable specific features:
 - **Xero Integration**: `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`, `XERO_WEBHOOK_KEY`
 - **Email Notifications**: `RESEND_API_KEY`
 - **Google Cloud Storage**: `GOOGLE_APPLICATION_CREDENTIALS`, `GCS_BUCKET_NAME`
+- **Google Authentication**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
 
 ---
 

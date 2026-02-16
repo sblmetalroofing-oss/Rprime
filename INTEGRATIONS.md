@@ -9,8 +9,50 @@ This document covers setup and configuration for all third-party integrations in
 3. [OpenAI for AI Features](#openai-for-ai-features)
 4. [Resend Email Service](#resend-email-service)
 5. [Google Cloud Storage](#google-cloud-storage)
+6. [Google Authentication](#google-authentication)
 
 ---
+
+## Google Authentication
+
+Google Sign-In allows users to log in with their Google accounts.
+
+### Setup Steps
+
+1. **Create Google Cloud Project**
+   - Go to [console.cloud.google.com](https://console.cloud.google.com)
+   - Create a project (or use existing)
+
+2. **Configure OAuth Consent Screen**
+   - APIs & Services → OAuth consent screen
+   - User Type: **External**
+   - Fill in app name, support email, etc.
+   - Add scopes: `.../auth/userinfo.email`, `.../auth/userinfo.profile`, `openid`
+
+3. **Create Credentials**
+   - APIs & Services → Credentials → Create Credentials → OAuth client ID
+   - Application type: **Web application**
+   - Name: `RPrime Production`
+   - **Authorized redirect URIs**:
+     ```
+     https://your-app-domain.com/api/auth/google/callback
+     ```
+     *(Replace `your-app-domain.com` with your actual Vercel domain)*
+
+4. **Environment Variables**
+   ```bash
+   GOOGLE_CLIENT_ID=your-client-id
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   ```
+
+### Troubleshooting
+
+**"redirect_uri_mismatch"**
+- Ensure the URL in Google Console exactly matches your deployed URL + `/api/auth/google/callback`.
+- Don't forget the `https://` protocol.
+
+---
+
 
 ## Stripe Payment Processing
 
