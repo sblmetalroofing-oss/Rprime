@@ -21,7 +21,11 @@ interface HttpError extends Error {
 const app = express();
 const httpServer = createServer(app);
 
-setupChatWebSocket(httpServer);
+// Only setup WebSocket for non-Vercel environments (Vercel serverless doesn't support WebSockets)
+if (!process.env.VERCEL) {
+  setupChatWebSocket(httpServer);
+}
+
 
 declare module "http" {
   interface IncomingMessage {
