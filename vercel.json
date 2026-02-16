@@ -1,67 +1,15 @@
 {
     "version": 2,
-    "buildCommand": "npm run build",
-    "installCommand": "npm install",
-    "outputDirectory": "dist/public",
-    "functions": {
-        "dist/index.cjs": {
-            "runtime": "nodejs20",
-            "memory": 1024,
-            "maxDuration": 30
-        }
-    },
-    "rewrites": [
+    "builds": [
         {
-            "source": "/api/:path*",
-            "destination": "/dist/index.cjs"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/dist/index.cjs"
+            "src": "dist/index.cjs",
+            "use": "@vercel/node"
         }
     ],
-    "headers": [
+    "routes": [
         {
-            "source": "/api/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
-                }
-            ]
-        },
-        {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "X-XSS-Protection",
-                    "value": "1; mode=block"
-                },
-                {
-                    "key": "Referrer-Policy",
-                    "value": "strict-origin-when-cross-origin"
-                }
-            ]
-        },
-        {
-            "source": "/assets/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=31536000, immutable"
-                }
-            ]
+            "src": "/(.*)",
+            "dest": "dist/index.cjs"
         }
-    ],
-    "env": {
-        "NODE_ENV": "production"
-    }
+    ]
 }
