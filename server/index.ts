@@ -71,7 +71,9 @@ async function initStripe() {
           }
         } catch (webhookError: unknown) {
           // Don't fail startup on webhook errors - they can be retried later
-          logger.warn('Webhook setup skipped', webhookError);
+          logger.warn('Webhook setup skipped', {
+            error: webhookError instanceof Error ? webhookError.message : String(webhookError)
+          });
         }
       } else {
         logger.info('Skipping webhook setup - no webhook URL configured');
