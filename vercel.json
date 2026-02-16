@@ -5,7 +5,7 @@
     "outputDirectory": "dist/public",
     "functions": {
         "dist/index.cjs": {
-            "runtime": "nodejs20.x",
+            "runtime": "nodejs20",
             "memory": 1024,
             "maxDuration": 30
         }
