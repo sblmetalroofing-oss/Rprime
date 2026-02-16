@@ -212,22 +212,35 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // Use PORT from environment, default to 5000 for Replit deployment
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      logger.info(`Server listening on port ${port}`);
-      // Seed document themes for organizations without any
-      seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
-      // Initialize Stripe AFTER server starts to allow health checks to pass quickly
-      initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
-      // Start Xero payment polling (every 5 minutes)
-      startXeroPolling();
-    },
-  );
+  // If running on Vercel, export the app directly. Vercel handles server startup.
+  // Otherwise, start the HTTP server for local development/other environments.
+  if (process.env.VERCEL) {
+    logger.info('Running on Vercel, exporting app directly.');
+    // Initialize Stripe and Xero polling immediately for Vercel, as there's no listen callback
+    initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
+    seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
+    startXeroPolling();
+  } else {
+    // Use PORT from environment, default to 5000 for Replit deployment
+    const port = parseInt(process.env.PORT || "5000", 10);
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+        reusePort: true,
+      },
+      () => {
+        logger.info(`Server listening on port ${port}`);
+        // Seed document themes for organizations without any
+        seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
+        // Initialize Stripe AFTER server starts to allow health checks to pass quickly
+        initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
+        // Start Xero payment polling (every 5 minutes)
+        startXeroPolling();
+      },
+    );
+  }
 })();
+
+// Export app for Vercel serverless deployment
+export default app;
