@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS "organizations" (
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
 
--- 3. Sessions Table (Mandatory for Auth)
+-- 3. Sessions Table
 CREATE TABLE IF NOT EXISTS "sessions" (
   "sid" varchar PRIMARY KEY,
   "sess" jsonb NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 );
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "sessions" ("expire");
 
--- 4. Crew Members Table (Required for Login Check)
+-- 4. Crew Members Table
 CREATE TABLE IF NOT EXISTS "crew_members" (
   "id" varchar PRIMARY KEY,
   "organization_id" varchar NOT NULL,
@@ -96,4 +96,223 @@ CREATE TABLE IF NOT EXISTS "email_verifications" (
   "expires_at" timestamp NOT NULL,
   "used_at" timestamp,
   "created_at" timestamp DEFAULT now()
+);
+
+-- 6. Customers Table
+CREATE TABLE IF NOT EXISTS "customers" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "email" text,
+  "phone" text,
+  "address" text,
+  "suburb" text,
+  "postcode" text,
+  "state" text,
+  "notes" text,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 7. Suppliers Table
+CREATE TABLE IF NOT EXISTS "suppliers" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "contact_name" text,
+  "email" text,
+  "phone" text,
+  "address" text,
+  "suburb" text,
+  "postcode" text,
+  "state" text,
+  "account_number" text,
+  "payment_terms" text,
+  "notes" text,
+  "is_active" text DEFAULT 'true' NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 8. Items Table
+CREATE TABLE IF NOT EXISTS "items" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "item_code" text NOT NULL,
+  "supplier_item_code" text,
+  "description" text NOT NULL,
+  "category" text,
+  "unit" text DEFAULT 'each',
+  "cost_price" real DEFAULT 0 NOT NULL,
+  "sell_price" real DEFAULT 0 NOT NULL,
+  "markup" real DEFAULT 0,
+  "supplier_id" varchar REFERENCES "suppliers"("id"),
+  "supplier_name" text,
+  "notes" text,
+  "is_active" text DEFAULT 'true',
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 9. Jobs Table
+CREATE TABLE IF NOT EXISTS "jobs" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "reference_number" text,
+  "builder_reference" text,
+  "customer_id" varchar REFERENCES "customers"("id"),
+  "title" text NOT NULL,
+  "description" text,
+  "address" text NOT NULL,
+  "suburb" text,
+  "scheduled_date" text,
+  "scheduled_time" text,
+  "estimated_duration" real,
+  "status" text DEFAULT 'intake' NOT NULL,
+  "priority" text DEFAULT 'normal' NOT NULL,
+  "assigned_to" text[],
+  "notes" text,
+  "labor_hours" real,
+  "labor_rate" real DEFAULT 75,
+  "completed_at" timestamp,
+  "timer_started_at" timestamp,
+  "timer_total_seconds" real DEFAULT 0,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 10. Reports Table
+CREATE TABLE IF NOT EXISTS "reports" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "customer_id" varchar REFERENCES "customers"("id"),
+  "job_id" varchar,
+  "theme_id" varchar,
+  "customer_name" text NOT NULL,
+  "contact_phone" text,
+  "address" text NOT NULL,
+  "suburb" text NOT NULL,
+  "date" text NOT NULL,
+  "inspector" text NOT NULL,
+  "status" text DEFAULT 'draft' NOT NULL,
+  "roof_type" text NOT NULL,
+  "roof_pitch" text,
+  "storeys" text,
+  "access_method" text,
+  "measurements" jsonb,
+  "total_estimates" real DEFAULT 0 NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 11. Document Themes
+CREATE TABLE IF NOT EXISTS "document_themes" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "is_default" text DEFAULT 'false' NOT NULL,
+  "is_archived" text DEFAULT 'false' NOT NULL,
+  "theme_color" text DEFAULT '#0891b2',
+  "company_name" text,
+  "abn" text,
+  "license_number" text,
+  "email1" text,
+  "email2" text,
+  "phone" text,
+  "website" text,
+  "address" text,
+  "logo_url" text,
+  "logo_position" text DEFAULT 'left',
+  "terms_url" text,
+  "custom_link1_label" text,
+  "custom_link1_url" text,
+  "custom_link2_label" text,
+  "custom_link2_url" text,
+  "bank_name" text,
+  "bank_bsb" text,
+  "bank_account_number" text,
+  "bank_account_name" text,
+  "pay_id" text,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 12. Quotes Table
+CREATE TABLE IF NOT EXISTS "quotes" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "quote_number" text NOT NULL,
+  "customer_id" varchar REFERENCES "customers"("id"),
+  "report_id" varchar REFERENCES "reports"("id"),
+  "job_id" varchar REFERENCES "jobs"("id"),
+  "theme_id" varchar,
+  "customer_name" text NOT NULL,
+  "customer_email" text,
+  "customer_phone" text,
+  "address" text NOT NULL,
+  "suburb" text,
+  "status" text DEFAULT 'draft' NOT NULL,
+  "valid_until" text,
+  "reference" text,
+  "description" text,
+  "discount" real DEFAULT 0,
+  "subtotal" real DEFAULT 0 NOT NULL,
+  "gst" real DEFAULT 0 NOT NULL,
+  "total" real DEFAULT 0 NOT NULL,
+  "total_cost" real DEFAULT 0,
+  "gross_profit" real DEFAULT 0,
+  "notes" text,
+  "terms" text,
+  "email_reminders" text DEFAULT 'false',
+  "sms_reminders" text DEFAULT 'false',
+  "sent_at" timestamp,
+  "accepted_at" timestamp,
+  "declined_at" timestamp,
+  "decline_reason" text,
+  "applied_markup_percent" real DEFAULT 100,
+  "created_by" text,
+  "created_by_name" text,
+  "sent_by" text,
+  "sent_by_name" text,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 13. Quote Items Table
+CREATE TABLE IF NOT EXISTS "quote_items" (
+  "id" varchar PRIMARY KEY,
+  "quote_id" varchar NOT NULL REFERENCES "quotes"("id") ON DELETE CASCADE,
+  "product_id" varchar REFERENCES "items"("id") ON DELETE SET NULL,
+  "item_code" text,
+  "description" text NOT NULL,
+  "qty" real NOT NULL,
+  "unit_cost" real NOT NULL,
+  "cost_price" real DEFAULT 0,
+  "total" real NOT NULL,
+  "sort_order" real DEFAULT 0,
+  "section" text
+);
+
+-- 14. Document Settings
+CREATE TABLE IF NOT EXISTS "document_settings" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "type" text NOT NULL,
+  "prefix" text DEFAULT '',
+  "next_number" real DEFAULT 1,
+  "default_expiry_days" real DEFAULT 30,
+  "default_due_days" real DEFAULT 14,
+  "default_terms" text,
+  "bank_name" text,
+  "bsb" text,
+  "account_number" text,
+  "account_name" text,
+  "reminder_message" text,
+  "email_reminders_default" text DEFAULT 'false',
+  "sms_reminders_default" text DEFAULT 'false',
+  "customer_can_accept" text DEFAULT 'true',
+  "customer_can_decline" text DEFAULT 'true',
+  "auto_mark_paid" text DEFAULT 'false',
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
 );
