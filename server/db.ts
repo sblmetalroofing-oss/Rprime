@@ -5,7 +5,8 @@ import { logger } from "./logger";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
+
+if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_OVERRIDE) {
   const errorMsg = "DATABASE_URL must be set. Did you forget to provision a database?";
   logger.error(errorMsg);
   throw new Error(errorMsg);
@@ -13,7 +14,7 @@ if (!process.env.DATABASE_URL) {
 
 // Configure connection pool with optimal settings
 const poolConfig = {
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL_OVERRIDE || process.env.DATABASE_URL,
   max: 20, // Maximum pool size
   idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
   connectionTimeoutMillis: 10000, // Timeout for acquiring connection
