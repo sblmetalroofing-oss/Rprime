@@ -1,0 +1,198 @@
+Financial Control Model Mapped to Your Workflow
+
+1. Job Intake → No Money Moves Yet
+
+Purpose: Opportunity validation
+
+Financial rules
+	•	Job logged with:
+	•	Client
+	•	Site
+	•	Job type
+	•	Est. value range
+	•	No costs committed
+	•	No scheduling promises
+	•	No supplier contact
+
+Control
+✔ Prevents premature spend
+✔ Keeps WIP clean
+
+⸻
+
+2. Quoting → Margin Locked Before Approval
+
+Purpose: Price discipline
+
+Quote must include
+	•	Materials (supplier A / B split)
+	•	Subcontract labour
+	•	Overheads allocation (fixed %)
+	•	Minimum margin threshold (non-negotiable)
+
+Hard rule
+
+If margin < target → quote cannot be sent
+
+Money discipline
+	•	Quote value defines:
+	•	Required deposit
+	•	Cash-in timeline
+	•	Expected profit
+
+⸻
+
+3. Schedule Work → Deposit Trigger
+
+Purpose: Cash protection
+
+Before scheduling
+	•	Deposit received (usually 30–50%)
+	•	Deposit clears bank
+
+Deposit allocation
+	•	GST skimmed immediately
+	•	Net deposit split:
+	•	Materials provision
+	•	Labour provision
+	•	Tax buffer
+
+Rule
+
+No deposit = no date
+
+This single rule eliminates 80% of cash-flow pain.
+
+⸻
+
+4. Check Measure → Cost Validation Gate
+
+Purpose: Prevent cost blowouts
+
+Before issuing POs
+	•	Final dimensions confirmed
+	•	Material quantities locked
+	•	Subcontract scope signed off
+
+Money control
+	•	Updated job cost forecast
+	•	Margin rechecked
+	•	Any variance approved by director
+
+If margin drops below tolerance → pause job
+
+⸻
+
+5. Orders (POs) → Money Commits Here
+
+Purpose: Controlled spend
+
+PO rules
+	•	Every supplier & subcontractor:
+	•	Must have a PO
+	•	Must reference job number
+	•	PO total ≤ allocated job budget
+
+Payment rule
+	•	Suppliers paid from materials bucket
+	•	Subs paid from labour bucket
+	•	Never from general cash
+
+This keeps your accounts explainable under audit.
+
+⸻
+
+6. Work in Progress → Cash vs Progress Tracked
+
+Purpose: Stop silent losses
+
+Weekly checks
+	•	% complete vs % invoiced
+	•	Labour cost vs allowance
+	•	Materials received vs ordered
+
+Red flag
+
+Job >70% complete but <70% invoiced
+
+That’s a cash flow alarm.
+
+⸻
+
+7. Quality Check → Final Invoice Authority
+
+Purpose: Protect final payment
+
+Before QC sign-off
+	•	All variations documented
+	•	All defects closed
+	•	Compliance photos stored
+
+Money rule
+
+No QC sign-off = no final invoice
+
+This avoids disputes and withheld payments.
+
+⸻
+
+8. Close Out → Profit Becomes Real
+
+Purpose: Turn paper profit into banked profit
+
+After final payment
+	•	Confirm:
+	•	All suppliers paid
+	•	All subs paid
+	•	GST allocated
+	•	Remaining balance → Profit Reserve
+
+Rule
+
+Profit only exists after job close-out
+
+⸻
+
+Your Weekly Money Rhythm (Tied to This Model)
+
+Every Friday:
+	1.	Jobs scheduled next 14 days → deposits confirmed
+	2.	WIP jobs → % complete vs % invoiced
+	3.	Outstanding POs vs cash on hand
+	4.	Tax account balance vs liabilities
+	5.	Profit reserve movement
+
+This takes 30 minutes if the workflow is followed.
+
+⸻
+
+Account Structure That Supports This Model
+
+Minimum accounts:
+	1.	Operating Account
+	2.	Materials Account
+	3.	Labour / Subcontractor Account
+	4.	GST & PAYG Account
+	5.	ATO Payment Plan Account
+	6.	Profit Reserve
+	7.	Director Salary Account
+
+Money moves by rule, not emotion.
+
+⸻
+
+Why This Model Works for You Specifically
+	•	Prevents overspending before cash is received
+	•	Stops margin erosion mid-job
+	•	Makes ATO obligations predictable
+	•	Scales to multiple crews without chaos
+	•	Protects you personally as director
+
+⸻
+
+Next Step (Highly Recommended)
+
+I can:
+	•	turn this into a one-page financial SOP
+	•	map it directly into your CRM / job app (statuses + money triggers)
+	•	define who approves what (admin vs estimator vs director)
