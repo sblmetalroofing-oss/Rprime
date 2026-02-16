@@ -218,10 +218,8 @@ app.use((req, res, next) => {
   // Otherwise, start the HTTP server for local development/other environments.
   if (process.env.VERCEL) {
     logger.info('Running on Vercel, exporting app directly.');
-    // Initialize Stripe and Xero polling immediately for Vercel, as there's no listen callback
-    initStripe().catch((err) => logger.error('Failed to initialize Stripe', err));
-    seedDocumentThemes().catch((err) => logger.error('Failed to seed document themes', err));
-    startXeroPolling();
+    // Don't run initialization tasks on Vercel serverless - they block request handling
+    // and cause timeouts. These should be run separately or lazily initialized.
   } else {
     // Use PORT from environment, default to 5000 for Replit deployment
     const port = parseInt(process.env.PORT || "5000", 10);
