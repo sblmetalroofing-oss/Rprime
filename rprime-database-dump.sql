@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-
+-- Restrict command removed for Neon compatibility
 
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.10
@@ -8995,5 +8995,5 @@ ALTER TABLE ONLY stripe.tax_ids
 -- PostgreSQL database dump complete
 --
 
-\unrestrict c4qzx3IflBkSXfCTOLrgWI6dPyhBSU3iKu42MLHTy4LRndckmvAAx5WfeX7DluF
+-- Unrestrict command removed for Neon compatibility
 
