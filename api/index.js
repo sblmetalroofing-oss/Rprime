@@ -1,3 +1,5 @@
-import app from '../dist/index.cjs';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const app = require('../dist/index.cjs');
 
-export default app;
+export default app.default || app;
