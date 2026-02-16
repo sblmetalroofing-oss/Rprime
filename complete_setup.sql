@@ -602,3 +602,435 @@ CREATE TABLE IF NOT EXISTS "leads" (
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
 CREATE INDEX IF NOT EXISTS "leads_organization_id_idx" ON "leads" ("organization_id");
+
+-- 28. LEAD ACTIVITIES
+CREATE TABLE IF NOT EXISTS "lead_activities" (
+  "id" varchar PRIMARY KEY,
+  "lead_id" varchar NOT NULL REFERENCES "leads"("id") ON DELETE CASCADE,
+  "type" text DEFAULT 'note' NOT NULL,
+  "content" text NOT NULL,
+  "created_by" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "lead_activities_lead_id_idx" ON "lead_activities" ("lead_id");
+
+-- 29. LEAD REMINDERS
+CREATE TABLE IF NOT EXISTS "lead_reminders" (
+  "id" varchar PRIMARY KEY,
+  "lead_id" varchar NOT NULL REFERENCES "leads"("id") ON DELETE CASCADE,
+  "reminder_date" timestamp NOT NULL,
+  "message" text NOT NULL,
+  "is_completed" text DEFAULT 'false',
+  "completed_at" timestamp,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "lead_reminders_lead_id_idx" ON "lead_reminders" ("lead_id");
+
+-- 30. LEAD ATTACHMENTS
+CREATE TABLE IF NOT EXISTS "lead_attachments" (
+  "id" varchar PRIMARY KEY,
+  "lead_id" varchar NOT NULL REFERENCES "leads"("id") ON DELETE CASCADE,
+  "category" text DEFAULT 'other' NOT NULL,
+  "file_name" text NOT NULL,
+  "content_type" text NOT NULL,
+  "file_size" real NOT NULL,
+  "storage_key" text NOT NULL,
+  "caption" text,
+  "uploaded_by" text,
+  "uploaded_by_name" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "lead_attachments_lead_id_idx" ON "lead_attachments" ("lead_id");
+
+-- 31. JOB ATTACHMENTS
+CREATE TABLE IF NOT EXISTS "job_attachments" (
+  "id" varchar PRIMARY KEY,
+  "job_id" varchar NOT NULL REFERENCES "jobs"("id") ON DELETE CASCADE,
+  "category" text DEFAULT 'other' NOT NULL,
+  "file_name" text NOT NULL,
+  "content_type" text NOT NULL,
+  "file_size" real NOT NULL,
+  "storage_key" text NOT NULL,
+  "caption" text,
+  "uploaded_by" text,
+  "uploaded_by_name" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "job_attachments_job_id_idx" ON "job_attachments" ("job_id");
+
+-- 32. CREW CHECKLISTS
+CREATE TABLE IF NOT EXISTS "crew_checklists" (
+  "id" varchar PRIMARY KEY,
+  "job_id" varchar NOT NULL REFERENCES "jobs"("id") ON DELETE CASCADE,
+  "name" text NOT NULL,
+  "type" text DEFAULT 'safety' NOT NULL,
+  "is_completed" text DEFAULT 'false',
+  "completed_by" text,
+  "completed_at" timestamp,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "crew_checklists_job_id_idx" ON "crew_checklists" ("job_id");
+
+-- 33. CHECKLIST ITEMS
+CREATE TABLE IF NOT EXISTS "checklist_items" (
+  "id" varchar PRIMARY KEY,
+  "checklist_id" varchar NOT NULL REFERENCES "crew_checklists"("id") ON DELETE CASCADE,
+  "description" text NOT NULL,
+  "is_checked" text DEFAULT 'false',
+  "checked_by" text,
+  "checked_at" timestamp,
+  "notes" text,
+  "sort_order" real DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS "checklist_items_checklist_id_idx" ON "checklist_items" ("checklist_id");
+
+-- 34. OFFLINE SYNC QUEUE
+CREATE TABLE IF NOT EXISTS "offline_sync_queue" (
+  "id" varchar PRIMARY KEY,
+  "device_id" text NOT NULL,
+  "entity_type" text NOT NULL,
+  "entity_id" varchar NOT NULL,
+  "action" text NOT NULL,
+  "payload" jsonb,
+  "sync_status" text DEFAULT 'pending' NOT NULL,
+  "synced_at" timestamp,
+  "error_message" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 35. PUSH SUBSCRIPTIONS
+CREATE TABLE IF NOT EXISTS "push_subscriptions" (
+  "id" varchar PRIMARY KEY,
+  "crew_member_id" varchar NOT NULL,
+  "endpoint" text NOT NULL,
+  "p256dh" text NOT NULL,
+  "auth" text NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "push_subscriptions_crew_member_id_idx" ON "push_subscriptions" ("crew_member_id");
+
+-- 36. FLASHING MATERIALS
+CREATE TABLE IF NOT EXISTS "flashing_materials" (
+  "id" varchar PRIMARY KEY,
+  "name" text NOT NULL,
+  "brand" text DEFAULT 'Colorbond',
+  "color_code" text,
+  "is_active" text DEFAULT 'true',
+  "sort_order" real DEFAULT 0,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 37. FLASHING ORDERS
+CREATE TABLE IF NOT EXISTS "flashing_orders" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "order_number" text NOT NULL,
+  "job_id" varchar REFERENCES "jobs"("id"),
+  "purchase_order_id" varchar REFERENCES "purchase_orders"("id"),
+  "supplier_id" varchar REFERENCES "suppliers"("id"),
+  "job_reference" text,
+  "contact_name" text,
+  "contact_phone" text,
+  "delivery_address" text,
+  "delivery_method" text DEFAULT 'pickup',
+  "status" text DEFAULT 'draft',
+  "notes" text,
+  "total_flashings" real DEFAULT 0,
+  "total_folds" real DEFAULT 0,
+  "total_linear_meters" real DEFAULT 0,
+  "total_sqm" real DEFAULT 0,
+  "pdf_url" text,
+  "sent_at" timestamp,
+  "created_by" text,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "flashing_orders_organization_id_idx" ON "flashing_orders" ("organization_id");
+
+-- 38. FLASHING PROFILES
+CREATE TABLE IF NOT EXISTS "flashing_profiles" (
+  "id" varchar PRIMARY KEY,
+  "order_id" varchar NOT NULL REFERENCES "flashing_orders"("id") ON DELETE CASCADE,
+  "code" text NOT NULL,
+  "name" text,
+  "material_id" varchar REFERENCES "flashing_materials"("id"),
+  "material_name" text,
+  "points" jsonb NOT NULL,
+  "girth" real NOT NULL,
+  "folds" real DEFAULT 2 NOT NULL,
+  "quantity" real DEFAULT 1 NOT NULL,
+  "length" real NOT NULL,
+  "total_linear_meters" real DEFAULT 0 NOT NULL,
+  "sort_order" real DEFAULT 0,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "flashing_profiles_order_id_idx" ON "flashing_profiles" ("order_id");
+
+-- 39. FLASHING TEMPLATES
+CREATE TABLE IF NOT EXISTS "flashing_templates" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "category" text,
+  "points" jsonb NOT NULL,
+  "default_girth" real,
+  "default_folds" real DEFAULT 2,
+  "description" text,
+  "is_active" text DEFAULT 'true',
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "flashing_templates_organization_id_idx" ON "flashing_templates" ("organization_id");
+
+-- 40. TENANT MIGRATIONS
+CREATE TABLE IF NOT EXISTS "tenant_migrations" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "migration_key" text NOT NULL,
+  "completed_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 41. ADMIN AUDIT LOGS
+CREATE TABLE IF NOT EXISTS "admin_audit_logs" (
+  "id" varchar PRIMARY KEY,
+  "admin_user_id" varchar NOT NULL,
+  "action" text NOT NULL,
+  "target_organization_id" varchar,
+  "target_organization_name" text,
+  "details" jsonb,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 42. DOCUMENT VIEW TOKENS
+CREATE TABLE IF NOT EXISTS "document_view_tokens" (
+  "id" varchar PRIMARY KEY,
+  "document_type" text NOT NULL,
+  "document_id" varchar NOT NULL,
+  "token" varchar NOT NULL UNIQUE,
+  "expires_at" timestamp NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 43. XERO CONNECTIONS
+CREATE TABLE IF NOT EXISTS "xero_connections" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "xero_tenant_id" text NOT NULL,
+  "xero_tenant_name" text,
+  "access_token" text NOT NULL,
+  "refresh_token" text NOT NULL,
+  "token_expires_at" timestamp NOT NULL,
+  "id_token" text,
+  "scope" text,
+  "is_active" text DEFAULT 'true',
+  "last_sync_at" timestamp,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "xero_connections_organization_id_idx" ON "xero_connections" ("organization_id");
+
+-- 44. XERO SYNC HISTORY
+CREATE TABLE IF NOT EXISTS "xero_sync_history" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "sync_type" text NOT NULL,
+  "direction" text NOT NULL,
+  "status" text NOT NULL,
+  "record_id" varchar,
+  "xero_id" text,
+  "error_message" text,
+  "details" jsonb,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "xero_sync_history_organization_id_idx" ON "xero_sync_history" ("organization_id");
+
+-- 45. QUOTE TEMPLATES
+CREATE TABLE IF NOT EXISTS "quote_templates" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "description" text,
+  "is_default" text DEFAULT 'false' NOT NULL,
+  "is_active" text DEFAULT 'true' NOT NULL,
+  "waste_percent" real DEFAULT 10,
+  "labor_markup_percent" real DEFAULT 0,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "quote_templates_organization_id_idx" ON "quote_templates" ("organization_id");
+
+-- 46. QUOTE TEMPLATE MAPPINGS
+CREATE TABLE IF NOT EXISTS "quote_template_mappings" (
+  "id" varchar PRIMARY KEY,
+  "template_id" varchar NOT NULL REFERENCES "quote_templates"("id") ON DELETE CASCADE,
+  "measurement_type" text NOT NULL,
+  "product_id" varchar REFERENCES "items"("id") ON DELETE SET NULL,
+  "product_description" text,
+  "unit_price" real DEFAULT 0,
+  "calculation_type" text DEFAULT 'per_unit' NOT NULL,
+  "coverage_per_unit" real DEFAULT 1,
+  "apply_waste" text DEFAULT 'true' NOT NULL,
+  "labor_minutes_per_unit" real DEFAULT 0,
+  "labor_rate" real DEFAULT 75,
+  "custom_formula" text,
+  "sort_order" real DEFAULT 0,
+  "is_active" text DEFAULT 'true' NOT NULL
+);
+
+-- 47. SAVED LINE SECTIONS
+CREATE TABLE IF NOT EXISTS "saved_line_sections" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "name" text NOT NULL,
+  "description" text,
+  "created_by" text,
+  "created_at" timestamp DEFAULT now()
+);
+
+-- 48. SAVED LINE SECTION ITEMS
+CREATE TABLE IF NOT EXISTS "saved_line_section_items" (
+  "id" varchar PRIMARY KEY,
+  "section_id" varchar NOT NULL REFERENCES "saved_line_sections"("id") ON DELETE CASCADE,
+  "description" text NOT NULL,
+  "qty" real DEFAULT 1 NOT NULL,
+  "unit_cost" real DEFAULT 0 NOT NULL,
+  "total" real DEFAULT 0 NOT NULL,
+  "item_code" text,
+  "cost_price" real DEFAULT 0,
+  "product_id" varchar REFERENCES "items"("id") ON DELETE SET NULL,
+  "section" text,
+  "sort_order" real DEFAULT 0
+);
+
+-- 49. ROOF REPORT EXTRACTIONS
+CREATE TABLE IF NOT EXISTS "roof_report_extractions" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "quote_id" varchar REFERENCES "quotes"("id") ON DELETE SET NULL,
+  "job_id" varchar REFERENCES "jobs"("id") ON DELETE SET NULL,
+  "filename" text NOT NULL,
+  "source_url" text,
+  "property_address" text,
+  "total_roof_area" real,
+  "pitched_roof_area" real,
+  "flat_roof_area" real,
+  "predominant_pitch" real,
+  "facet_count" real,
+  "eaves" real,
+  "ridges" real,
+  "valleys" real,
+  "hips" real,
+  "rakes" real,
+  "wall_flashing" real,
+  "step_flashing" real,
+  "parapet_wall" real,
+  "transitions" real,
+  "raw_extraction" jsonb,
+  "extracted_at" timestamp DEFAULT now() NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "roof_report_extractions_organization_id_idx" ON "roof_report_extractions" ("organization_id");
+
+-- 50. SETTINGS MIGRATIONS
+CREATE TABLE IF NOT EXISTS "settings_migrations" (
+  "id" varchar PRIMARY KEY,
+  "table_name" text NOT NULL,
+  "record_id" varchar NOT NULL,
+  "organization_id" varchar,
+  "operation" text NOT NULL,
+  "old_value" jsonb,
+  "new_value" jsonb,
+  "status" text DEFAULT 'pending' NOT NULL,
+  "applied_at" timestamp,
+  "applied_by" varchar,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "settings_migrations_organization_id_idx" ON "settings_migrations" ("organization_id");
+
+-- 51. ML PRICING PATTERNS
+CREATE TABLE IF NOT EXISTS "ml_pricing_patterns" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "item_description" text NOT NULL,
+  "normalized_key" text NOT NULL,
+  "avg_unit_price" real NOT NULL,
+  "min_unit_price" real,
+  "max_unit_price" real,
+  "avg_quantity" real,
+  "occurrence_count" integer DEFAULT 1 NOT NULL,
+  "total_revenue" real DEFAULT 0,
+  "source" text DEFAULT 'tradify' NOT NULL,
+  "product_id" varchar,
+  "item_code" text,
+  "cost_price" real,
+  "markup_percentage" real,
+  "unit" text,
+  "last_updated_at" timestamp DEFAULT now() NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "ml_pricing_patterns_organization_id_idx" ON "ml_pricing_patterns" ("organization_id");
+
+-- 52. ML IMPORT SESSIONS
+CREATE TABLE IF NOT EXISTS "ml_import_sessions" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "filename" text NOT NULL,
+  "source" text DEFAULT 'tradify' NOT NULL,
+  "total_quotes" integer DEFAULT 0,
+  "accepted_quotes" integer DEFAULT 0,
+  "total_line_items" integer DEFAULT 0,
+  "unique_patterns" integer DEFAULT 0,
+  "status" text DEFAULT 'processing' NOT NULL,
+  "error_message" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "ml_import_sessions_organization_id_idx" ON "ml_import_sessions" ("organization_id");
+
+-- 53. FEEDBACK EVENTS
+CREATE TABLE IF NOT EXISTS "feedback_events" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar,
+  "user_id" varchar,
+  "event_type" text NOT NULL,
+  "severity" text DEFAULT 'info' NOT NULL,
+  "message" text NOT NULL,
+  "context" jsonb,
+  "stack_trace" text,
+  "metadata" jsonb,
+  "user_email" text,
+  "resolved" text DEFAULT 'false' NOT NULL,
+  "ai_analysis" text,
+  "priority" text DEFAULT 'medium' NOT NULL,
+  "assigned_to" varchar,
+  "resolution_notes" text,
+  "resolved_at" timestamp,
+  "resolved_by" varchar,
+  "group_id" varchar,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 54. USER BEHAVIOR EVENTS
+CREATE TABLE IF NOT EXISTS "user_behavior_events" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar,
+  "user_id" varchar,
+  "session_id" varchar,
+  "event_type" text NOT NULL,
+  "element_selector" text,
+  "page_url" text,
+  "context" jsonb,
+  "metadata" jsonb,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+-- 55. NOTIFICATIONS
+CREATE TABLE IF NOT EXISTS "notifications" (
+  "id" varchar PRIMARY KEY,
+  "organization_id" varchar NOT NULL,
+  "recipient_crew_member_id" varchar NOT NULL,
+  "type" text NOT NULL,
+  "title" text NOT NULL,
+  "message" text NOT NULL,
+  "is_read" text DEFAULT 'false',
+  "action_url" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
