@@ -5,8 +5,8 @@
     "installCommand": "npm install",
     "rewrites": [
         {
-            "source": "/api/(.*)",
-            "destination": "/api/server.cjs"
+            "source": "/(.*)",
+            "destination": "/api/[...route].mjs"
         }
     ]
 }
